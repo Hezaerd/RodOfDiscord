@@ -1,3 +1,4 @@
 {
-  "item.discordrod.rod_of_discord": "Bâton de la Discorde"
+  "item.rodofdiscord.rod_of_discord": "Bâton de la Discorde",
+  "item.rodofdiscord.rod_of_discord.not_safe": "L'emplacement ciblé n'est pas valide!"
 }
