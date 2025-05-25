@@ -16,7 +16,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-          "com.hezaerd.DiscordRod"
+			"com.hezaerd.DiscordRodMod"
 		]
 	},
 	"depends": {
