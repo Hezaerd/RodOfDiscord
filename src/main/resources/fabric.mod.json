@@ -16,7 +16,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.hezaerd.Discordrod"
+          "com.hezaerd.DiscordRod"
 		]
 	},
 	"mixins": [
