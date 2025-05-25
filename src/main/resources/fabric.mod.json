@@ -3,15 +3,15 @@
 	"id": "discordrod",
 	"version": "${version}",
 	"name": "discordrod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Simple implementation of the Terraria Rod Of Discord as a Minecraft mod",
 	"authors": [
-		"Me!"
+		"Hezaerd"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/discordrod/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -19,9 +19,6 @@
           "com.hezaerd.DiscordRod"
 		]
 	},
-	"mixins": [
-		"discordrod.mixins.json"
-	],
 	"depends": {
 		"fabricloader": ">=0.16.14",
 		"minecraft": "~1.21.5",
