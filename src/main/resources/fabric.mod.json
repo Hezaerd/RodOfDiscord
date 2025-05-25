@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "discordrod",
+	"id": "rodofdiscord",
 	"version": "${version}",
-	"name": "discordrod",
+	"name": "rodofdiscord",
 	"description": "Simple implementation of the Terraria Rod Of Discord as a Minecraft mod",
 	"authors": [
 		"Hezaerd"
@@ -12,11 +12,11 @@
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "MIT",
-	"icon": "assets/discordrod/icon.png",
+	"icon": "assets/rodofdiscord/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.hezaerd.DiscordRodMod"
+			"com.hezaerd.RodOfDiscordMod"
 		]
 	},
 	"depends": {

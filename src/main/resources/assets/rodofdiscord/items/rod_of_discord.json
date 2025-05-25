@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "discordrod:item/discord_rod"
+    "model": "rodofdiscord:item/rod_of_discord"
   }
 }
