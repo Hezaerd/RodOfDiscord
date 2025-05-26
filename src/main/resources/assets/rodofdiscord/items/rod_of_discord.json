@@ -1,6 +1,23 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "rodofdiscord:item/rod_of_discord"
-  }
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "minecraft:enchantments",
+    "cases": [
+      {
+        "when": {
+          "rodofdiscord:harmony": 1
+        },
+        "model": {
+          "type": "minecraft:model",
+          "model": "rodofdiscord:item/rod_of_harmony"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "rodofdiscord:item/rod_of_discord"
+    }
+  },
+  "hand_animation_on_swap": true
 }
