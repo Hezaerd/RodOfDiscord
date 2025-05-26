@@ -1,6 +1,9 @@
 package com.hezaerd.item;
 
+import com.hezaerd.registry.ModStatusEffects;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -95,8 +98,6 @@ public class RodOfDiscord extends Item {
         ));
 
         Vec3d teleportTo = null;
-        BlockPos debugBlockPos = null;
-
         if (hit.getType() == HitResult.Type.BLOCK) {
             BlockPos hitPos = hit.getBlockPos();
             var face = hit.getSide();
@@ -112,12 +113,10 @@ public class RodOfDiscord extends Item {
                 if (isSafe(world, side) && world.getBlockState(below).isSolidBlock(world, below)) 
                     tpPos = side;
             }
-            if (tpPos != null) {
+            if (tpPos != null) 
                 teleportTo = Vec3d.ofCenter(tpPos);
-            }
-        } else if (hit.getType() == HitResult.Type.MISS) {
+        } else if (hit.getType() == HitResult.Type.MISS) 
             teleportTo = targetPos;
-        }
         
         if (teleportTo == null) {;
             player.sendMessage(Text.translatable("item.rodofdiscord.rod_of_discord.not_safe"), true);
@@ -132,10 +131,19 @@ public class RodOfDiscord extends Item {
 
         player.incrementStat(Stats.USED.getOrCreateStat(this));
 
+            
+            
         if (!player.isCreative()) {
             stack.damage(1, player, LivingEntity.getSlotForHand(player.getActiveHand()));
-            player.getItemCooldownManager().set(stack, COOLDOWN_TICKS);
+            player.getItemCooldownManager().set(stack, 7); // prevent accidental spamming
+            
+            if (player.hasStatusEffect(ModStatusEffects.CHAOS)) {
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1, false, true, false));
+                player.removeStatusEffect(ModStatusEffects.CHAOS);
+            }
+            player.addStatusEffect(new StatusEffectInstance(ModStatusEffects.CHAOS, COOLDOWN_TICKS));
         }
+        
     }
 
     // Checks if the position and the one above are air, and the block below is solid
