@@ -1,6 +1,8 @@
 package com.hezaerd.item;
 
+import com.hezaerd.registry.ModEnchantmentEffects;
 import com.hezaerd.registry.ModStatusEffects;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -137,7 +139,8 @@ public class RodOfDiscord extends Item {
             stack.damage(1, player, LivingEntity.getSlotForHand(player.getActiveHand()));
             player.getItemCooldownManager().set(stack, 7); // prevent accidental spamming
             
-            if (player.hasStatusEffect(ModStatusEffects.CHAOS)) {
+            boolean harmonized = EnchantmentHelper.getEnchantments(stack).getEnchantments().contains(ModEnchantmentEffects.HARMONY);
+            if (!harmonized && player.hasStatusEffect(ModStatusEffects.CHAOS)) {
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1, false, true, false));
                 player.removeStatusEffect(ModStatusEffects.CHAOS);
             }

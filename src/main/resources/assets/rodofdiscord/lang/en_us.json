@@ -1,5 +1,7 @@
 {
   "item.rodofdiscord.rod_of_discord": "Rod of Discord",
   "item.rodofdiscord.rod_of_discord.not_safe": "No safe spot to teleport!",
-  "effect.rodofdiscord.chaos": "Chaos"
+  "effect.rodofdiscord.chaos": "Chaos",
+  "tag.item.rodofdiscord.harmonizable": "Harmonizable",
+  "enchantment.rodofdiscord.harmony": "Harmony"
 }

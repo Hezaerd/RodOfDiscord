@@ -1,5 +1,7 @@
 {
   "item.rodofdiscord.rod_of_discord": "Bâton de la Discorde",
   "item.rodofdiscord.rod_of_discord.not_safe": "L'emplacement ciblé n'est pas valide!",
-  "effect.rodofdiscord.chaos": "Chaos"
+  "effect.rodofdiscord.chaos": "Chaos",
+  "tag.item.rodofdiscord.harmonizable": "Harmonizable",
+  "enchantment.rodofdiscord.harmony": "Harmony"
 }

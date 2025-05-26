@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
 			"com.hezaerd.RodOfDiscordMod"
+		],
+		"fabric-datagen": [
+			"com.hezaerd.RodOfDiscordDataGenerator"
 		]
 	},
 	"depends": {
