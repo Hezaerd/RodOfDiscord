@@ -1,8 +1,11 @@
 package com.hezaerd.item;
 
-import com.hezaerd.registry.ModEnchantmentEffects;
+import com.hezaerd.registry.ModDataComponents;
 import com.hezaerd.registry.ModStatusEffects;
-import net.minecraft.enchantment.EnchantmentHelper;
+import com.hezaerd.utils.ModLib;
+import net.minecraft.advancement.AdvancementEntry;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -11,6 +14,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.ServerAdvancementLoader;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
@@ -25,8 +31,9 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-public class RodOfDiscord extends Item {
+public class RodOfDiscordItem extends Item {
     private static final int MAX_USE_TICKS = 20; // .25 seconds
     
     private static final int COOLDOWN_TICKS = 100; // 5 seconds
@@ -34,12 +41,18 @@ public class RodOfDiscord extends Item {
     private static final int MIN_TELEPORT_DISTANCE = 4; // 4 blocks
     private static final int MAX_TELEPORT_DISTANCE = 16; // 16 blocks
     
-    public RodOfDiscord(Settings settings) {
+    public RodOfDiscordItem(Settings settings) {
         super(settings
                 .maxCount(1)
                 .rarity(Rarity.UNCOMMON)
                 .maxDamage(320)
+                .component(ModDataComponents.HARMONIZED_COMPONENT, false)
         );
+    }
+    
+    @Override
+    public boolean hasGlint(ItemStack stack) {
+        return Boolean.TRUE.equals(stack.get(ModDataComponents.HARMONIZED_COMPONENT));
     }
 
     @Override
@@ -137,10 +150,9 @@ public class RodOfDiscord extends Item {
             
         if (!player.isCreative()) {
             stack.damage(1, player, LivingEntity.getSlotForHand(player.getActiveHand()));
-            player.getItemCooldownManager().set(stack, 7); // prevent accidental spamming
+            player.getItemCooldownManager().set(stack, 15); // prevent accidental spamming
             
-            boolean harmonized = EnchantmentHelper.getEnchantments(stack).getEnchantments().contains(ModEnchantmentEffects.HARMONY);
-            if (!harmonized && player.hasStatusEffect(ModStatusEffects.CHAOS)) {
+            if (player.hasStatusEffect(ModStatusEffects.CHAOS)) {
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1, false, true, false));
                 player.removeStatusEffect(ModStatusEffects.CHAOS);
             }
@@ -169,4 +181,15 @@ public class RodOfDiscord extends Item {
         }
     }
     
+    @Override
+    public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot) {
+        super.inventoryTick(stack, world, entity, slot);
+        
+        if (world.isClient || !(entity instanceof ServerPlayerEntity player)) return;
+        ServerAdvancementLoader loader = world.getServer().getAdvancementLoader();
+        AdvancementEntry killWarden = loader.get(ModLib.id("kill_warden"));
+        var bl = player.getAdvancementTracker().getProgress(killWarden).isDone();
+        stack.set(ModDataComponents.HARMONIZED_COMPONENT, bl);
+        ModLib.LOGGER.info("Rod of Discord harmonized: {}", stack.get(ModDataComponents.HARMONIZED_COMPONENT));
+    }
 }

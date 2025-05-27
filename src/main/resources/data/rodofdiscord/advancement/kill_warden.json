@@ -1,0 +1,38 @@
+{
+  "parent": "minecraft:adventure/kill_mob_near_sculk_catalyst",
+  "criteria": {
+    "kill_warden": {
+      "conditions": {
+        "entity": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "type": "minecraft:warden"
+            }
+          }
+        ]
+      },
+      "trigger": "minecraft:player_killed_entity"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.adventure.kill_warden.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:warden_spawn_egg"
+    },
+    "title": {
+        "translate": "advancement.adventure.kill_warden.title"
+    }
+  },
+  "requirements": [
+    [
+      "kill_warden"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

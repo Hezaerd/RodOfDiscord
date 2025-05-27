@@ -16,7 +16,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.hezaerd.RodOfDiscordMod"
+          "com.hezaerd.RodOfDiscord"
 		],
 		"fabric-datagen": [
 			"com.hezaerd.RodOfDiscordDataGenerator"

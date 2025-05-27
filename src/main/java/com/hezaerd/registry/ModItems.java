@@ -1,6 +1,6 @@
 package com.hezaerd.registry;
 
-import com.hezaerd.item.RodOfDiscord;
+import com.hezaerd.item.RodOfDiscordItem;
 import com.hezaerd.utils.ModLib;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -12,15 +12,15 @@ import java.util.function.Function;
 
 public class ModItems {
     
-    public static RodOfDiscord ROD_OF_DISCORD;
+    public static RodOfDiscordItem ROD_OF_DISCORD;
     
     public static void init() {
-        ROD_OF_DISCORD = registerRod("rod_of_discord", RodOfDiscord::new, new Item.Settings());
+        ROD_OF_DISCORD = registerRod("rod_of_discord", RodOfDiscordItem::new, new Item.Settings());
     }
 
-    private static RodOfDiscord registerRod(String name, Function<Item.Settings, RodOfDiscord> itemFactory, Item.Settings settings) {
+    private static RodOfDiscordItem registerRod(String name, Function<Item.Settings, RodOfDiscordItem> itemFactory, Item.Settings settings) {
         RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, ModLib.id(name));
-        RodOfDiscord item = itemFactory.apply(settings.registryKey(itemKey));
+        RodOfDiscordItem item = itemFactory.apply(settings.registryKey(itemKey));
         Registry.register(Registries.ITEM, itemKey, item);
         return item;
     }
