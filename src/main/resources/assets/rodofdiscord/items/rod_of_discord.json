@@ -1,16 +1,18 @@
 {
   "model": {
-    "type": "minecraft:condition",
+    "type": "minecraft:select",
     "property": "minecraft:component",
-    "predicate": "minecraft:custom_data",
-    "value": {
-      "rodofdiscord:harmonized": true
-    },
-    "on_true": {
-      "type": "minecraft:model",
-      "model": "rodofdiscord:item/rod_of_harmony"
-    },
-    "on_false": {
+    "component": "rodofdiscord:harmonized",
+    "cases": [
+      {
+        "when": true,
+        "model": {
+          "type": "minecraft:model",
+          "model": "rodofdiscord:item/rod_of_harmony"
+        }
+      }
+    ],
+    "fallback": {
       "type": "minecraft:model",
       "model": "rodofdiscord:item/rod_of_discord"
     }

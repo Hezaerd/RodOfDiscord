@@ -41,11 +41,13 @@ public class RodOfDiscordItem extends Item {
     private static final int MIN_TELEPORT_DISTANCE = 4; // 4 blocks
     private static final int MAX_TELEPORT_DISTANCE = 16; // 16 blocks
     
+    private int tick;
+    
     public RodOfDiscordItem(Settings settings) {
         super(settings
                 .maxCount(1)
                 .rarity(Rarity.UNCOMMON)
-                .maxDamage(320)
+                .maxDamage(64)
                 .component(ModDataComponents.HARMONIZED_COMPONENT, false)
         );
     }
@@ -183,13 +185,10 @@ public class RodOfDiscordItem extends Item {
     
     @Override
     public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot) {
-        super.inventoryTick(stack, world, entity, slot);
-        
         if (world.isClient || !(entity instanceof ServerPlayerEntity player)) return;
         ServerAdvancementLoader loader = world.getServer().getAdvancementLoader();
         AdvancementEntry killWarden = loader.get(ModLib.id("kill_warden"));
         var bl = player.getAdvancementTracker().getProgress(killWarden).isDone();
         stack.set(ModDataComponents.HARMONIZED_COMPONENT, bl);
-        ModLib.LOGGER.info("Rod of Discord harmonized: {}", stack.get(ModDataComponents.HARMONIZED_COMPONENT));
     }
 }
