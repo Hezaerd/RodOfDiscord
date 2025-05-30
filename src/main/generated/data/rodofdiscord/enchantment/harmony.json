@@ -1,0 +1,20 @@
+{
+  "anvil_cost": 30,
+  "description": {
+    "translate": "enchantment.rodofdiscord.harmony"
+  },
+  "max_cost": {
+    "base": 75,
+    "per_level_above_first": 0
+  },
+  "max_level": 1,
+  "min_cost": {
+    "base": 25,
+    "per_level_above_first": 0
+  },
+  "slots": [
+    "mainhand"
+  ],
+  "supported_items": "#rodofdiscord:harmonizable",
+  "weight": 1
+}

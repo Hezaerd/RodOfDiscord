@@ -1,8 +1,8 @@
 {
   "item.rodofdiscord.rod_of_discord": "Rod of Discord",
+  "item.rodofdiscord.rod_of_discord.harmonized": "Rod of Harmony",
   "item.rodofdiscord.rod_of_discord.not_safe": "No safe spot to teleport!",
   "effect.rodofdiscord.chaos": "Chaos",
   "tag.item.rodofdiscord.harmonizable": "Harmonizable",
-  "advancement.adventure.kill_warden.title": "Wardeninator",
-  "advancement.adventure.kill_warden.description": "Chase down the dominant creature of the Deep Dark in its own lair"
+  "enchantment.rodofdiscord.harmony": "Harmony"
 }

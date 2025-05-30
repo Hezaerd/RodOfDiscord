@@ -1,9 +1,10 @@
 package com.hezaerd.item;
 
 import com.hezaerd.registry.ModDataComponents;
+import com.hezaerd.registry.ModEnchantmentEffects;
 import com.hezaerd.registry.ModStatusEffects;
-import com.hezaerd.utils.ModLib;
-import net.minecraft.advancement.AdvancementEntry;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -12,10 +13,11 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.ServerAdvancementLoader;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -28,33 +30,92 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class RodOfDiscordItem extends Item {
-    private static final int MAX_USE_TICKS = 20; // .25 seconds
-    
+    private static final int MAX_USE_TICKS = 20; // 1 second
+    private static final int MAX_SNEAK_USE_TICKS = 40; // 2 seconds
     private static final int COOLDOWN_TICKS = 100; // 5 seconds
-    
     private static final int MIN_TELEPORT_DISTANCE = 4; // 4 blocks
     private static final int MAX_TELEPORT_DISTANCE = 16; // 16 blocks
-    
-    private int tick;
-    
+    private static final int MAX_SNEAK_TELEPORT_DISTANCE = 24; // 24 blocks when sneaking
+
+    private boolean isUsing = false;
+    private boolean isHarmony = false;
+    private int currentUseTicks = 0;
+    private boolean isSneakingUse = false;
+
     public RodOfDiscordItem(Settings settings) {
         super(settings
                 .maxCount(1)
-                .rarity(Rarity.UNCOMMON)
                 .maxDamage(64)
-                .component(ModDataComponents.HARMONIZED_COMPONENT, false)
+                .repairable(Items.NETHER_STAR)
         );
+    }
+
+    @Override
+    public Text getName(ItemStack stack) {
+        if (isHarmony) {
+            return Text.translatable("item.rodofdiscord.rod_of_discord.harmonized")
+                    .formatted(Rarity.EPIC.getFormatting());
+        } else {
+            return Text.translatable("item.rodofdiscord.rod_of_discord")
+                    .formatted(Rarity.UNCOMMON.getFormatting());
+        }
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot) {
+        if (world.isClient) return;
+
+        try {
+            RegistryEntry.Reference<Enchantment> harmonyEnchant = world.getRegistryManager()
+                    .getOrThrow(RegistryKeys.ENCHANTMENT)
+                    .getOrThrow(ModEnchantmentEffects.HARMONY);
+            this.isHarmony = EnchantmentHelper.getLevel(harmonyEnchant, stack) > 0;
+        } catch (Exception e) {
+            this.isHarmony = false;
+        }
+
+        stack.set(ModDataComponents.HARMONIZED_COMPONENT, this.isHarmony);
     }
     
     @Override
-    public boolean hasGlint(ItemStack stack) {
-        return Boolean.TRUE.equals(stack.get(ModDataComponents.HARMONIZED_COMPONENT));
+    public boolean isItemBarVisible(ItemStack stack) {
+        // Show bar when charging or when damaged
+        return stack.isDamaged() || isUsing;
+    }
+
+    @Override
+    public int getItemBarStep(ItemStack stack) {
+        // If charging, show charge progress; otherwise show durability
+        if (isUsing && currentUseTicks > 0) {
+            int maxTicks = isSneakingUse ? MAX_SNEAK_USE_TICKS : MAX_USE_TICKS;
+            return MathHelper.clamp(Math.round(currentUseTicks * 13.0F / maxTicks), 0, 13);
+        }
+
+        // Default durability display when not charging
+        return MathHelper.clamp(Math.round(13.0F - stack.getDamage() * 13.0F / stack.getMaxDamage()), 0, 13);
+    }
+
+    @Override
+    public int getItemBarColor(ItemStack stack) {
+        // If charging, show charging color; otherwise show durability color
+        if (isUsing && currentUseTicks > 0) {
+            int maxTicks = isSneakingUse ? MAX_SNEAK_USE_TICKS : MAX_USE_TICKS;
+            float progress = (float)currentUseTicks / maxTicks;
+            // Red to green: hue from 0 to 1/3
+            return MathHelper.hsvToRgb(progress / 3.0F, 1.0F, 1.0F);
+        }
+
+        // Default durability color when not charging
+        int maxDamage = stack.getMaxDamage();
+        float durability = Math.max(0.0F, ((float)maxDamage - stack.getDamage()) / maxDamage);
+        return MathHelper.hsvToRgb(durability / 3.0F, 1.0F, 1.0F);
     }
 
     @Override
@@ -63,14 +124,29 @@ public class RodOfDiscordItem extends Item {
     }
 
     @Override
-    public int getMaxUseTime(ItemStack stack, LivingEntity user) { 
-        return MAX_USE_TICKS; 
+    public int getMaxUseTime(ItemStack stack, LivingEntity user) {
+        if (user instanceof PlayerEntity player && player.isSneaking())
+            return MAX_SNEAK_USE_TICKS;
+        else
+            return MAX_USE_TICKS;
     }
-    
+
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         user.setCurrentHand(hand);
+        this.isUsing = true;
+        this.currentUseTicks = 0;
+        this.isSneakingUse = user.isSneaking();
         return ActionResult.SUCCESS;
+    }
+
+    @Override
+    public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
+        // Update use progress for the charging bar
+        int maxTicks = isSneakingUse ? MAX_SNEAK_USE_TICKS : MAX_USE_TICKS;
+        this.currentUseTicks = maxTicks - remainingUseTicks;
+
+        super.usageTick(world, user, stack, remainingUseTicks);
     }
 
     @Override
@@ -78,7 +154,12 @@ public class RodOfDiscordItem extends Item {
         if (!(user instanceof PlayerEntity player)) return false;
         if (world.isClient) return false;
 
-        int usedTicks = MAX_USE_TICKS - remainingUseTicks;
+        int maxTicks = isSneakingUse ? MAX_SNEAK_USE_TICKS : MAX_USE_TICKS;
+        int usedTicks = maxTicks - remainingUseTicks;
+
+        this.isUsing = false;
+        this.currentUseTicks = 0;
+
         tryTeleport(player, stack, world, usedTicks);
         return true;
     }
@@ -88,19 +169,27 @@ public class RodOfDiscordItem extends Item {
         if (!(user instanceof PlayerEntity player)) return stack;
         if (world.isClient) return stack;
 
-        // Full use duration
-        tryTeleport(player, stack, world, MAX_USE_TICKS);
+        int maxTicks = isSneakingUse ? MAX_SNEAK_USE_TICKS : MAX_USE_TICKS;
+
+        this.isUsing = false;
+        this.currentUseTicks = 0;
+
+        tryTeleport(player, stack, world, maxTicks);
         return stack;
     }
 
     private void tryTeleport(PlayerEntity player, ItemStack stack, World world, int usedTicks) {
-        boolean fullUse = usedTicks >= MAX_USE_TICKS;
-        float t = Math.min(1.0f, (float) usedTicks / MAX_USE_TICKS);
-        double distance = MIN_TELEPORT_DISTANCE + t * (MAX_TELEPORT_DISTANCE - MIN_TELEPORT_DISTANCE);
+        // Determine max values based on sneaking state
+        int maxTicks = isSneakingUse ? MAX_SNEAK_USE_TICKS : MAX_USE_TICKS;
+        int maxDistance = isSneakingUse ? MAX_SNEAK_TELEPORT_DISTANCE : MAX_TELEPORT_DISTANCE;
 
-        if (!fullUse && distance > MAX_TELEPORT_DISTANCE - 0.01) {
-            distance = MAX_TELEPORT_DISTANCE - 0.01;
-        };
+        boolean fullUse = usedTicks >= maxTicks;
+        float t = Math.min(1.0f, (float) usedTicks / maxTicks);
+        double distance = MIN_TELEPORT_DISTANCE + t * (maxDistance - MIN_TELEPORT_DISTANCE);
+
+        if (!fullUse && distance > maxDistance - 0.01) {
+            distance = maxDistance - 0.01;
+        }
 
         Vec3d eyePos = player.getEyePos();
         Vec3d lookVec = player.getRotationVec(1.0f);
@@ -122,25 +211,26 @@ public class RodOfDiscordItem extends Item {
             BlockPos tpPos = null;
             if (face == Direction.UP) {
                 BlockPos above = hitPos.up();
-                if (isSafe(world, above)) 
+                if (isSafe(world, above))
                     tpPos = above;
             } else {
                 BlockPos side = hitPos.offset(face);
                 BlockPos below = side.down();
-                if (isSafe(world, side) && world.getBlockState(below).isSolidBlock(world, below)) 
+                if (isSafe(world, side) && world.getBlockState(below).isSolidBlock(world, below))
                     tpPos = side;
             }
-            if (tpPos != null) 
+            if (tpPos != null)
                 teleportTo = Vec3d.ofCenter(tpPos);
-        } else if (hit.getType() == HitResult.Type.MISS) 
+        } else if (hit.getType() == HitResult.Type.MISS) {
             teleportTo = targetPos;
-        
-        if (teleportTo == null) {;
+        }
+
+        if (teleportTo == null) {
             player.sendMessage(Text.translatable("item.rodofdiscord.rod_of_discord.not_safe"), true);
             return;
         }
-        
-        player.requestTeleport(teleportTo.x, teleportTo.y + 1, teleportTo.z); // <-- Commented out
+
+        player.requestTeleport(teleportTo.x, teleportTo.y + 1, teleportTo.z);
 
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
@@ -148,19 +238,19 @@ public class RodOfDiscordItem extends Item {
 
         player.incrementStat(Stats.USED.getOrCreateStat(this));
 
-            
-            
         if (!player.isCreative()) {
             stack.damage(1, player, LivingEntity.getSlotForHand(player.getActiveHand()));
-            player.getItemCooldownManager().set(stack, 15); // prevent accidental spamming
-            
-            if (player.hasStatusEffect(ModStatusEffects.CHAOS)) {
-                player.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1, false, true, false));
-                player.removeStatusEffect(ModStatusEffects.CHAOS);
+            if (isHarmony) {
+                player.getItemCooldownManager().set(stack, 7);
+            } else {
+                player.getItemCooldownManager().set(stack, 20); // prevent accidental spamming
+                if (player.hasStatusEffect(ModStatusEffects.CHAOS)) {
+                    player.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1, false, true, false));
+                    player.removeStatusEffect(ModStatusEffects.CHAOS);
+                }
+                player.addStatusEffect(new StatusEffectInstance(ModStatusEffects.CHAOS, COOLDOWN_TICKS));
             }
-            player.addStatusEffect(new StatusEffectInstance(ModStatusEffects.CHAOS, COOLDOWN_TICKS));
         }
-        
     }
 
     // Checks if the position and the one above are air, and the block below is solid
@@ -169,26 +259,18 @@ public class RodOfDiscordItem extends Item {
                 && world.getBlockState(pos.up()).isAir()
                 && world.getBlockState(pos.down()).isSolidBlock(world, pos.down());
     }
-    
+
     private void spawnTeleportParticles(World world, Vec3d pos) {
         for (int i = 0; i < 32; i++) {
             world.addParticleClient(
-                    ParticleTypes.PORTAL, 
+                    ParticleTypes.PORTAL,
                     pos.getX(),
                     pos.getY() + world.random.nextDouble() * 2.0,
-                    pos.getZ(), world.random.nextGaussian(), 
-                    0.0, 
+                    pos.getZ(),
+                    world.random.nextGaussian(),
+                    0.0,
                     world.random.nextGaussian()
             );
         }
-    }
-    
-    @Override
-    public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot) {
-        if (world.isClient || !(entity instanceof ServerPlayerEntity player)) return;
-        ServerAdvancementLoader loader = world.getServer().getAdvancementLoader();
-        AdvancementEntry killWarden = loader.get(ModLib.id("kill_warden"));
-        var bl = player.getAdvancementTracker().getProgress(killWarden).isDone();
-        stack.set(ModDataComponents.HARMONIZED_COMPONENT, bl);
     }
 }

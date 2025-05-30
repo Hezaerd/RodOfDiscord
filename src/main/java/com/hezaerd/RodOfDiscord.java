@@ -1,9 +1,6 @@
 package com.hezaerd;
 
-import com.hezaerd.registry.ModDataComponents;
-import com.hezaerd.registry.ModItems;
-import com.hezaerd.registry.ModLootTableModifiers;
-import com.hezaerd.registry.ModStatusEffects;
+import com.hezaerd.registry.*;
 import com.hezaerd.utils.ModLib;
 import net.fabricmc.api.ModInitializer;
 
@@ -15,6 +12,7 @@ public class RodOfDiscord implements ModInitializer {
 		
 		ModItems.init();
 		ModDataComponents.init();
+		ModEnchantmentEffects.init();
 	 	ModStatusEffects.init();
 		ModLootTableModifiers.init();
 	}

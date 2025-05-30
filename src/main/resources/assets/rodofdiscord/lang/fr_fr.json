@@ -1,8 +1,8 @@
 {
   "item.rodofdiscord.rod_of_discord": "Bâton de la Discorde",
+  "item.rodofdiscord.rod_of_discord.harmonized": "Bâton d'Harmonie",
   "item.rodofdiscord.rod_of_discord.not_safe": "L'emplacement ciblé n'est pas valide!",
   "effect.rodofdiscord.chaos": "Chaos",
   "tag.item.rodofdiscord.harmonizable": "Harmonizable",
-  "advancement.adventure.kill_warden.title": "Wardeninator",
-  "advancement.adventure.kill_warden.description": "Chassez la créature dominante du Deep Dark dans son propre repaire"
+  "enchantment.rodofdiscord.harmony": "Harmonie"
 }
